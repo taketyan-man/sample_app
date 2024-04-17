@@ -7,7 +7,7 @@ class User < ApplicationRecord
                     format: { with: VAID_EMAIL_REGEX },
                     uniqueness: true
   has_secure_password
-  validates :password, length: { minimum: 6 } , presence: true
+  validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
    
    # 渡された文字列のハッシュ値を返す
    def User.digest(string)
@@ -25,6 +25,8 @@ class User < ApplicationRecord
     self.remember_token = User.new_token
     self.update_attribute(:remember_digest, User.digest(remember_token))
   end
+
+  
 
   def authenticated?(remember_token)
     return false if remember_digest.nil?
