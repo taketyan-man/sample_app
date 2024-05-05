@@ -41,6 +41,8 @@ group :test do
   gem "minitest-reporters",       "1.6.0"
   gem "guard",                    "2.18.0"
   gem "guard-minitest",           "2.4.6"
+  gem 'rspec-rails'
+  gem 'factory_bot_rails'
 end
 
 group :production do
