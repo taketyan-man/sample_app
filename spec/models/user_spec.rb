@@ -64,8 +64,8 @@ RSpec.describe ApplicationHelper, type: :request do
   end
 
   describe '#authenticated?' do
-   it 'digestがnilならfalseを返すこと' do
-     expect(user.authenticated?('')).to be_falsy
+   it 'authentivaded? should return false for a user with digest' do
+     expect(user.authenticated?(:remember, '')).to be_falsy
    end
  end
 end
