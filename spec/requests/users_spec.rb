@@ -10,13 +10,24 @@ RSpec.describe "Users", type: :request do
   end
 
   describe 'POST /users #create' do
-    it "invalid signup inforamtion" do
-      expect {
-        post users_path, params: { user: { name:  "name",
-                                           email: "user@invalid.com", 
-                                           password:              "foobor",
-                                           password_confirmation: "bar" } }
-      }.to_not change(User, :count)
+    context "invalid signup inforamtion" do
+      it "name blank" do
+        expect {
+          post users_path, params: { user: { name:  " ",
+                                              email: "user@invalid.com",
+                                              password:              "foobar",
+                                              password_confirmation: "foobar" } }
+        }.to_not change(User, :count)
+      end
+
+      it "password_confirmation dont match password" do
+        expect {
+          post users_path, params: { user: { name:  "name",
+                                             email: "user@invalid.com", 
+                                             password:              "foobar",
+                                             password_confirmation: "bar" } }
+        }.to_not change(User, :count)
+      end
     end
     
     context "signup valid" do
@@ -63,26 +74,42 @@ RSpec.describe "Users", type: :request do
 
     it "should get edit" do
       post login_path, params: { session: { email: user.email,
-                                            password: user.password } }
+      password: user.password } }
       get edit_user_path(user)
       expect(response.body).to include full_title('Edit user')
     end
 
-    context "valid edit inform" do
-      it "unsuccessful edit" do
-        post login_path, params: { session: { email: user.email,
-                                            password: user.password } }
-        get edit_user_path(user)
-        patch user_path(user), params: { user: { name:  "",
-                                                 email: "foo@invalid",
-                                                 password:              "foo",
-                                                 password_confirmation: "bar" } }
-        user.reload
-        expect(user.name).to_not eq('')
-        expect(user.email).to_not eq('')
-        expect(user.password).to_not eq('foo')
-        expect(user.password_confirmation).to_not eq('bar') 
-      end
+    it "successful edit" do
+      post login_path, params: { session: { email: user.email,
+      password: user.password } }
+      get edit_user_path(user)
+      name =  "Foobar"
+      email = "foo@bar.com"
+      patch user_path(user), params: { user: { name:  name,
+                                                email: email,
+                                                password:              "",
+                                                password_confirmation: "" } }
+      expect(response).to redirect_to user                         
+      expect(flash).to be_any
+      user.reload
+      expect(user.name).to eq(name)
+      expect(user.email).to eq(email)
+    end
+
+    it "unsuccessful edit" do
+      post login_path, params: { session: { email: user.email,
+      password: user.password } }
+      get edit_user_path(user)
+      patch user_path(user), params: { user: { name:  "",
+                                                email: "foo@invalid",
+                                                password:              "foo",
+                                                password_confirmation: "bar" } }
+      user.reload
+      expect(user.name).to_not eq('')
+      expect(user.email).to_not eq('')
+      expect(user.password).to_not eq('foo')
+      expect(user.password_confirmation).to_not eq('bar')
+      expect(response.body).to include 'The form contains 4 errors.' 
     end
   end
 end
