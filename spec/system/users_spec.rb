@@ -11,7 +11,7 @@ RSpec.describe "Users", type: :system do
       fill_in "Name",         with: ''
       fill_in "Email",        with: 'user@valid'
       fill_in "Password",     with: 'foo'
-      fill_in "Confirmation", with: 'bar'
+      fill_in "Password confirmation", with: 'bar'
       click_button 'Create my account'
       
       expect(page).to have_selector 'div#error_explanation'
