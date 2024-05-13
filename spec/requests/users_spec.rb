@@ -69,12 +69,35 @@ RSpec.describe "Users", type: :request do
     end
   end
 
-  describe 'UPDATE /users' do
-    let!(:user) { FactoryBot.create(:user) }
+  describe 'get /users/{id}/edit' do
+    let(:user) { FactoryBot.create(:user) }
+   
+    it 'should get edit' do
+      log_in user
+      get edit_user_path(user)
+      expect(response.body).to include full_title('Edit user')
+    end
+   
+    context 'when not logged in' do
+      it 'empty flash' do
+        get edit_user_path(user)
+        expect(flash).to_not be_empty
+      end
+   
+      it 'should redirect edit' do
+        get edit_user_path(user)
+        expect(response).to redirect_to login_path
+      end
+    end
+  end
+ 
 
-    it "should get edit" do
-      post login_path, params: { session: { email: user.email,
-      password: user.password } }
+  describe 'UPDATE /users' do
+    let(:user) { FactoryBot.create(:user) }
+
+    it "should post user" do
+      post login_path, params: { session: { email:    user.email,
+                                            password: user.password } }
       get edit_user_path(user)
       expect(response.body).to include full_title('Edit user')
     end
@@ -96,20 +119,38 @@ RSpec.describe "Users", type: :request do
       expect(user.email).to eq(email)
     end
 
-    it "unsuccessful edit" do
-      post login_path, params: { session: { email: user.email,
-      password: user.password } }
-      get edit_user_path(user)
-      patch user_path(user), params: { user: { name:  "",
-                                                email: "foo@invalid",
-                                                password:              "foo",
-                                                password_confirmation: "bar" } }
-      user.reload
-      expect(user.name).to_not eq('')
-      expect(user.email).to_not eq('')
-      expect(user.password).to_not eq('foo')
-      expect(user.password_confirmation).to_not eq('bar')
-      expect(response.body).to include 'The form contains 4 errors.' 
+    context 'when not logged in' do
+      it 'empty flash' do
+        patch user_path(user), params: { user: { name: user.name,
+                                                 email: user.email } }
+        expect(response).to redirect_to login_path
+      end
+    end
+
+    context 'invalid edi information' do
+      before do
+        log_in user
+        patch user_path(user), params: { user: { name:  '',
+                                                email: 'foo@invalid',
+                                                password:              'foo',
+                                                password_confirmation: 'bar' } }
+      end
+
+      it "unsuccessful edit" do
+        user.reload
+        expect(user.name).to_not eq('')
+        expect(user.email).to_not eq('')
+        expect(user.password).to_not eq('foo')
+        expect(user.password_confirmation).to_not eq('bar')
+      end
+
+      it "should 4 errors" do
+        expect(response.body).to include 'The form contains 4 errors.' 
+      end
+
+      it "should redirect edit" do
+        expect(response.body).to include full_title('Edit user')
+      end
     end
   end
 end
