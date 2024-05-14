@@ -60,8 +60,7 @@ RSpec.describe "Users", type: :request do
   describe 'DELETE /logout' do
     it 'valid logout information' do
       user = FactoryBot.create(:user)
-      post login_path, params: { session: { email: user.email,
-                                            password: user.password } }
+      log_in(user)
       expect(logged_in?).to be_truthy
  
       delete logout_path
@@ -89,6 +88,22 @@ RSpec.describe "Users", type: :request do
         expect(response).to redirect_to login_path
       end
     end
+
+    context 'when logged in as wrong user' do
+      let(:other_user) { FactoryBot.create(:user, :other_user) }
+      it 'empty flash' do
+        log_in(other_user)
+        get edit_user_path(user)
+        expect(flash).to be_empty
+      end
+
+      it 'redirect root' do
+        log_in(user)
+        get edit_user_path(other_user)
+        expect(response).to redirect_to root_path
+      end
+    end
+
   end
  
 
@@ -120,10 +135,34 @@ RSpec.describe "Users", type: :request do
     end
 
     context 'when not logged in' do
-      it 'empty flash' do
+      it 'not empty flash' do
         patch user_path(user), params: { user: { name: user.name,
                                                  email: user.email } }
-        expect(response).to redirect_to login_path
+        expect(flash).to_not be_empty
+      end
+
+      it 'redirect login_path' do
+        patch user_path(user), params: { userd: { name:  user.name, 
+                                                  email: user.email } }
+        expect(response).to redirect_to login_path                                       
+      end
+    end
+
+    context 'when logged in as wrong user' do
+      let(:other_user) { FactoryBot.create(:user, :other_user) }
+
+      before do
+        log_in user
+        patch user_path(other_user), params: { user: { name:  other_user.name,
+                                                       email: other_user.email } }
+      end
+
+      it 'empty flash' do
+        expect(flash).to be_empty
+      end
+
+      it 'redirect root_path' do
+        expect(response).to redirect_to root_path
       end
     end
 
