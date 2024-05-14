@@ -1,11 +1,18 @@
 require "rails_helper"
 
 RSpec.describe "Users", type: :request do
-  describe '#new' do
+  describe 'GET /user/new' do
     it "should get new" do
       get signup_path
       expect(response).to have_http_status :ok
       expect(response.body).to include full_title('Sign up')
+    end
+  end
+
+  describe 'GET /users' do
+    it 'should redirect index when not logged in' do
+      get users_path
+      expect(response).to redirect_to login_url
     end
   end
 
@@ -86,6 +93,13 @@ RSpec.describe "Users", type: :request do
       it 'should redirect edit' do
         get edit_user_path(user)
         expect(response).to redirect_to login_path
+      end
+
+      it 'successful edit with friendly forwarding' do
+        #ログインしたときに問答無用で編集画面に移動させられるのを治す
+        get edit_user_path(user)
+        log_in(user)
+        expect(response).to redirect_to edit_user_path(user)
       end
     end
 

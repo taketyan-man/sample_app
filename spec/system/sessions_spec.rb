@@ -24,7 +24,6 @@ RSpec.describe "Sessions", type: :system do
         expect(page).to have_no_link 'Log in', href:login_path
         expect(page).to have_link 'Log out', href:logout_path
         expect(page).to have_link 'Profile', href:user_path(user)
-
       end
 
       it "login with invalid only password" do
