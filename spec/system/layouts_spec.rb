@@ -5,6 +5,7 @@ RSpec.describe "Layouts", type: :system do
     driven_by(:rack_test)
   end
   
+  
   let(:user) { FactoryBot.create(:user) }
 
   describe 'when logged in' do
