@@ -3,6 +3,7 @@ class UsersController < ApplicationController
                                         :following, :followers]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
+  after_action :send_line_notification, only: :create
 
   # GET /users
   def index
@@ -81,4 +82,20 @@ class UsersController < ApplicationController
       redirect_to(root_url, status: :see_other) unless current_user.admin?
     end
 
+    def send_line_notification
+      message = {
+        type: 'text',
+        text: 
+        "ユーザー登録されました。ユーザー詳細: #{details}"
+      }
+      
+      response = LINE_CLIENT.push_message('U61a515cbc8a7b78f5599630227eafb04', message)
+      Rails.logger.info("LINE push message response: #{response.body}")
+    end
+
+    def details
+      "ユーザーID: #{@user.email} 
+       名前: #{@user.name} 
+       作成日時: #{@user.created_at}}"
+    end
 end
